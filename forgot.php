@@ -9,9 +9,9 @@ $sent  = isset($_GET['sent']);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AssTracker — Forgot Password</title>
+  <title>AssTracker — Reset Password</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="auth-body">
@@ -24,8 +24,8 @@ $sent  = isset($_GET['sent']);
       <div class="alert alert-<?= $flash['type'] ?>"><?= htmlspecialchars($flash['msg']) ?></div>
     <?php endif; ?>
     <?php if (!$sent): ?>
-    <p class="auth-desc">Enter the email address associated with your account and Firebase will send you a reset link.</p>
-    <form method="POST" action="auth.php" class="auth-form">
+    <p class="auth-desc">Enter your email and we'll send you a reset link via Firebase.</p>
+    <form method="POST" action="auth.php">
       <input type="hidden" name="auth_action" value="forgot">
       <div class="form-group">
         <label for="email">Email address</label>

@@ -12,7 +12,6 @@ $idToken  = $_SESSION['id_token'];
 $userName = htmlspecialchars($_SESSION['user_name']);
 $flash    = getFlash();
 
-// ── Helper: redirect ──────────────────────────────────────
 function redirect(string $url): void { header("Location: $url"); exit; }
 
 function getFlash(): ?array {
@@ -22,7 +21,7 @@ function getFlash(): ?array {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  JSON API  (XHR requests from app.js)
+//  JSON API
 // ═══════════════════════════════════════════════════════════
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
@@ -30,7 +29,6 @@ if ($action === 'save') {
     $id    = $_POST['id'] ?? '';
     $title = trim($_POST['title'] ?? '');
     if (!$title) { echo json_encode(['ok'=>false,'msg'=>'Title required']); exit; }
-
     $data = [
         'userId'      => $uid,
         'title'       => $title,
@@ -41,7 +39,6 @@ if ($action === 'save') {
         'deadline'    => $_POST['deadline']    ?? '',
         'assigned_to' => trim($_POST['assigned_to'] ?? ''),
     ];
-
     if ($id) {
         fb_firestore_update("tasks/$id", $data, $idToken);
         echo json_encode(['ok'=>true,'id'=>$id]);
@@ -82,13 +79,10 @@ if ($action === 'get') {
 
 if ($action === 'list') {
     $tasks = fb_firestore_query('tasks', [['userId','EQUAL',$uid]], $idToken);
-
-    // PHP-side filtering
     $cat = $_GET['category'] ?? 'All';
     $sta = $_GET['status']   ?? 'All';
     $pri = $_GET['priority'] ?? 'All';
     $q   = strtolower($_GET['q'] ?? '');
-
     if ($cat !== 'All') $tasks = array_filter($tasks, fn($t) => ($t['category']??'') === $cat);
     if ($sta !== 'All') $tasks = array_filter($tasks, fn($t) => ($t['status']  ??'') === $sta);
     if ($pri !== 'All') $tasks = array_filter($tasks, fn($t) => ($t['priority']??'') === $pri);
@@ -96,30 +90,25 @@ if ($action === 'list') {
         str_contains(strtolower($t['title']??''), $q) ||
         str_contains(strtolower($t['assigned_to']??''), $q)
     );
-
     $tasks = array_values($tasks);
-
-    // PHP-side sorting
-    $sort = $_GET['sort'] ?? 'deadline';
-    $pOrd = ['Urgent'=>1,'High'=>2,'Medium'=>3,'Low'=>4];
+    $sort  = $_GET['sort'] ?? 'deadline';
+    $pOrd  = ['Urgent'=>1,'High'=>2,'Medium'=>3,'Low'=>4];
     usort($tasks, function($a, $b) use ($sort, $pOrd) {
         if ($sort === 'priority') return ($pOrd[$a['priority']]??9) <=> ($pOrd[$b['priority']]??9);
         if ($sort === 'title')    return strcasecmp($a['title']??'', $b['title']??'');
-        // deadline: empty last
         $da = $a['deadline'] ?? ''; $db = $b['deadline'] ?? '';
         if (!$da && !$db) return 0;
         if (!$da) return 1;
         if (!$db) return -1;
         return strcmp($da, $db);
     });
-
     echo json_encode($tasks);
     exit;
 }
 
 if ($action === 'stats') {
-    $tasks  = fb_firestore_query('tasks', [['userId','EQUAL',$uid]], $idToken);
-    $now    = date('Y-m-d');
+    $tasks = fb_firestore_query('tasks', [['userId','EQUAL',$uid]], $idToken);
+    $now   = date('Y-m-d');
     echo json_encode([
         'total'      => count($tasks),
         'done'       => count(array_filter($tasks, fn($t) => ($t['status']??'') === 'Done')),
@@ -138,8 +127,75 @@ if ($action === 'stats') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AssTracker — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Hero greeting banner */
+    .hero-banner {
+      background: var(--teal);
+      border-radius: var(--r-xl);
+      padding: 32px 40px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(30,61,58,.3);
+    }
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      right: -40px; top: -40px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.05);
+      pointer-events: none;
+    }
+    .hero-banner::after {
+      content: '';
+      position: absolute;
+      right: 80px; bottom: -60px;
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      pointer-events: none;
+    }
+    .hero-banner-text {}
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: rgba(255,255,255,.5);
+      margin-bottom: 8px;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .hero-title span { color: var(--orange); font-style: normal; }
+    .hero-sub-text {
+      font-size: 13px;
+      color: rgba(255,255,255,.5);
+      font-weight: 600;
+    }
+    .hero-today {
+      font-size: 12px;
+      color: rgba(255,255,255,.6);
+      font-weight: 700;
+      background: rgba(255,255,255,.08);
+      padding: 8px 16px;
+      border-radius: 50px;
+      flex-shrink: 0;
+    }
+  </style>
 </head>
 <body>
 
@@ -166,10 +222,23 @@ if ($action === 'stats') {
   <?php endif; ?>
 
   <main class="main">
+
+    <!-- Hero greeting -->
+    <div class="hero-banner">
+      <div class="hero-banner-text">
+        <div class="hero-eyebrow">Dashboard</div>
+        <div class="hero-title">Let's become more <span>Productive</span></div>
+        <div class="hero-sub-text">Stay on top of every task, deadline &amp; priority.</div>
+      </div>
+      <div class="hero-today" id="heroDayLabel">Loading…</div>
+    </div>
+
+    <!-- Stats -->
     <div class="stats" id="statsGrid"></div>
 
+    <!-- Filters -->
     <div class="filters">
-      <input type="text" id="searchInput" placeholder="🔍  Search tasks or people…">
+      <input type="text" id="searchInput" placeholder="Search tasks or people...">
       <select id="fCategory">
         <option>All</option>
         <option>Work</option><option>Study</option><option>Personal</option>
@@ -198,7 +267,6 @@ if ($action === 'stats') {
     <div class="modal">
       <h2 class="modal-title" id="modalTitle">New Task</h2>
       <input type="hidden" id="taskId">
-
       <div class="form-group">
         <label for="fTitle">Title <span class="req">*</span></label>
         <input type="text" id="fTitle" placeholder="What needs to be done?">
@@ -232,7 +300,6 @@ if ($action === 'stats') {
         <label for="fAssigned">Assigned To</label>
         <input type="text" id="fAssigned" placeholder="Name or team member">
       </div>
-
       <div class="modal-actions">
         <button class="btn btn-ghost" id="btnCancel">Cancel</button>
         <button class="btn btn-primary" id="btnSave">Save Task</button>
@@ -242,5 +309,14 @@ if ($action === 'stats') {
 
   <div class="toast" id="toast"></div>
   <script src="app.js"></script>
+  <script>
+    // Hero day label
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now = new Date();
+    const nth = n => { const s=['th','st','nd','rd']; const v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); };
+    document.getElementById('heroDayLabel').textContent =
+      days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + nth(now.getDate());
+  </script>
 </body>
 </html>

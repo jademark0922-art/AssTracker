@@ -25,6 +25,59 @@ function getFlash(): ?array {
 // ═══════════════════════════════════════════════════════════
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+// ── Debug: test Firebase connection & token ───────────────
+if ($action === 'debug') {
+    $token   = $_SESSION['id_token']      ?? '';
+    $refresh = $_SESSION['refresh_token'] ?? '';
+
+    // 1. Try token refresh
+    $refreshRes = null;
+    $freshToken = $token;
+    if ($refresh) {
+        $refreshRes = fb_http('POST', FB_REFRESH_URL . '?key=' . FB_API_KEY, [
+            'grant_type' => 'refresh_token', 'refresh_token' => $refresh,
+        ]);
+        if (!empty($refreshRes['id_token'])) $freshToken = $refreshRes['id_token'];
+    }
+
+    // 2. Try Firestore write WITH auth token
+    $writeWithAuth = fb_http('POST', FB_FIRESTORE . '/tasks', fb_fields([
+        'userId' => $uid, 'title' => '__debug_auth__',
+    ]), $freshToken);
+
+    // 3. Try Firestore write WITHOUT auth (using API key only) — tests open rules
+    $writeNoAuth = fb_http('POST', FB_FIRESTORE . '/tasks?key=' . FB_API_KEY, fb_fields([
+        'userId' => $uid, 'title' => '__debug_noauth__',
+    ]));
+
+    // 4. Try reading (GET) to see if read works
+    $readTest = fb_http('GET', FB_FIRESTORE . '/tasks?key=' . FB_API_KEY . '&pageSize=1');
+
+    $out = [
+        'uid'                    => $uid,
+        'has_id_token'           => !empty($token),
+        'has_refresh_token'      => !empty($refresh),
+        'token_first_20'         => $token ? substr($token, 0, 20).'...' : 'EMPTY',
+        'refresh_ok'             => !empty($refreshRes['id_token']),
+        'refresh_error'          => $refreshRes['error'] ?? null,
+        'write_with_auth_result' => $writeWithAuth,
+        'write_no_auth_result'   => $writeNoAuth,
+        'read_test_result'       => $readTest,
+    ];
+
+    // Cleanup any test docs created
+    foreach ([$writeWithAuth, $writeNoAuth] as $r) {
+        if (!empty($r['name'])) {
+            $p = explode('/', $r['name']); $id = end($p);
+            fb_http('DELETE', FB_FIRESTORE . "/tasks/$id", [], $freshToken);
+        }
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode($out, JSON_PRETTY_PRINT);
+    exit;
+}
+
 if ($action === 'save') {
     $id    = $_POST['id'] ?? '';
     $title = trim($_POST['title'] ?? '');
@@ -40,11 +93,21 @@ if ($action === 'save') {
         'assigned_to' => trim($_POST['assigned_to'] ?? ''),
     ];
     if ($id) {
-        fb_firestore_update("tasks/$id", $data, $idToken);
-        echo json_encode(['ok'=>true,'id'=>$id]);
+        $result = fb_firestore_update("tasks/$id", $data, $idToken);
+        if (isset($result['error'])) {
+            echo json_encode(['ok'=>false,'msg'=>'Failed to update task: ' . ($result['error']['message'] ?? 'unknown')]);
+        } else {
+            echo json_encode(['ok'=>true,'id'=>$id]);
+        }
     } else {
         $newId = fb_firestore_add('tasks', $data, $idToken);
-        echo json_encode(['ok'=>true,'id'=>$newId]);
+        if (!$newId) {
+            // Get raw error for debugging
+            $rawRes = fb_call('POST', FB_FIRESTORE . '/tasks', fb_fields($data));
+            echo json_encode(['ok'=>false,'msg'=>'Failed to save task.','firebase_error'=>$rawRes]);
+        } else {
+            echo json_encode(['ok'=>true,'id'=>$newId]);
+        }
     }
     exit;
 }
@@ -130,7 +193,6 @@ if ($action === 'stats') {
   <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Hero greeting banner */
     .hero-banner {
       background: var(--teal);
       border-radius: var(--r-xl);
@@ -206,8 +268,8 @@ if ($action === 'stats') {
     </div>
     <div class="header-actions">
       <span class="header-user">Hi, <?= $userName ?></span>
-      <button class="btn btn-ghost" id="toggleView">List View</button>
-      <button class="btn btn-primary" id="btnNewTask">+ New Task</button>
+      <button type="button" class="btn btn-ghost" id="toggleView">List View</button>
+      <button type="button" class="btn btn-primary" id="btnNewTask">+ New Task</button>
       <form method="POST" action="auth.php" style="margin:0">
         <input type="hidden" name="auth_action" value="logout">
         <button type="submit" class="btn btn-ghost btn-danger">Log out</button>
@@ -238,7 +300,7 @@ if ($action === 'stats') {
 
     <!-- Filters -->
     <div class="filters">
-      <input type="text" id="searchInput" placeholder="Search tasks or people...">
+      <input type="text" id="searchInput" placeholder="Search tasks...">
       <select id="fCategory">
         <option>All</option>
         <option>Work</option><option>Study</option><option>Personal</option>
@@ -301,8 +363,21 @@ if ($action === 'stats') {
         <input type="text" id="fAssigned" placeholder="Name or team member">
       </div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" id="btnCancel">Cancel</button>
-        <button class="btn btn-primary" id="btnSave">Save Task</button>
+        <button type="button" class="btn btn-ghost" id="btnCancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSave">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="overlay hidden" id="deleteModal">
+    <div class="modal" style="max-width:400px;text-align:center;">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--red-pale);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:26px;">🗑</div>
+      <h2 class="modal-title" style="justify-content:center;border:none;padding:0;margin-bottom:10px;">Delete Task?</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:28px;">This action cannot be undone. The task will be permanently removed.</p>
+      <div class="modal-actions" style="justify-content:center;gap:12px;">
+        <button type="button" class="btn btn-ghost" id="btnCancelDelete" style="min-width:100px;">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmDelete" style="min-width:100px;background:var(--red);border-color:var(--red);">Delete</button>
       </div>
     </div>
   </div>

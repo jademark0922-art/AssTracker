@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Landing-specific extras */
     .landing-hero-card {
       background: var(--teal);
       border-radius: var(--r-xl);
@@ -70,8 +69,8 @@
       stroke: var(--orange);
       stroke-width: 8;
       stroke-linecap: round;
-      stroke-dasharray: 220;
-      stroke-dashoffset: 44; /* 80% = 220 * 0.2 */
+      stroke-dasharray: 250;
+      stroke-dashoffset: 50; 
     }
     .ring-label {
       position: absolute;
@@ -139,14 +138,14 @@
       <div class="hero-card-eyebrow">Your productivity dashboard</div>
       <div class="hero-card-title">Let's become<br>more <span>Productive</span></div>
       <div class="hero-card-sub">Track every task, deadline & priority — all in one beautiful place.</div>
-      <a href="signup.php" class="btn btn-primary">View Tasks</a>
+      <a href="login.php" class="btn btn-primary">Get Started</a>
       <div class="progress-ring-wrap">
         <div style="position:relative;width:80px;height:80px;">
           <svg width="80" height="80" class="progress-ring">
             <circle class="ring-bg"   cx="40" cy="40" r="35"/>
             <circle class="ring-fill" cx="40" cy="40" r="35"/>
           </svg>
-          <div class="ring-label">80%</div>
+          <div class="ring-label">95%</div>
         </div>
       </div>
     </div>
@@ -167,8 +166,8 @@
         <div class="tile-time">Overdue alerts built-in</div>
       </div>
       <div class="schedule-tile teal-tile">
-        <div class="tile-title" style="font-size:13px">Click to get started</div>
-        <div class="tile-more">+7 features</div>
+        <div class="tile-title" style="font-size:13px">Your goals start here ✦</div>
+        <div class="tile-more">Stay ahead every day</div>
       </div>
     </div>
 
@@ -178,12 +177,6 @@
       <span class="pill">7 categories</span>
       <span class="pill">Stats dashboard</span>
     </div>
-
-    <div class="landing-cta">
-      <a href="signup.php" class="btn btn-primary btn-lg">Create a free account</a>
-      <a href="login.php"  class="btn btn-ghost  btn-lg">Log in</a>
-    </div>
-    <p class="landing-note">No credit card required · Free forever</p>
   </div>
 </body>
 </html>

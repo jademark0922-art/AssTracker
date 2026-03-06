@@ -98,7 +98,7 @@ $flash = getFlash();
     <div class="auth-panel-left">
       <a href="index.php" class="logo">AssTracker</a>
       <div class="auth-left-heading">Welcome<br>back</div>
-      <div class="auth-left-sub">Your tasks are waiting. Log in to pick up right where you left off.</div>
+      <div class="auth-left-sub">Your tasks are waiting. Log in with your username to pick up right where you left off.</div>
       <div class="auth-left-pills">
         <div class="auth-left-pill"><span class="auth-left-pill-dot"></span> Board & List view</div>
         <div class="auth-left-pill"><span class="auth-left-pill-dot"></span> Deadline tracking</div>
@@ -116,9 +116,10 @@ $flash = getFlash();
       <form method="POST" action="auth.php">
         <input type="hidden" name="auth_action" value="login">
         <div class="form-group">
-          <label for="email">Email address</label>
-          <input type="email" id="email" name="email" placeholder="you@example.com"
-                 value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required autofocus>
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="your_username"
+                 value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required autofocus
+                 autocomplete="username">
         </div>
         <div class="form-group">
           <label for="password">

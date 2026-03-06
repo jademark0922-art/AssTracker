@@ -112,13 +112,14 @@ $flash = getFlash();
         <input type="hidden" name="auth_action" value="register">
         <div class="form-group">
           <label for="name">Full name</label>
-          <input type="text" id="name" name="name" placeholder="Jane Smith"
+          <input type="text" id="name" name="name" placeholder="Jade Kram"
                  value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required autofocus>
         </div>
         <div class="form-group">
-          <label for="email">Email address</label>
-          <input type="email" id="email" name="email" placeholder="you@example.com"
-                 value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+          <label for="username">Username <span class="hint">(3–20 chars, letters/numbers/_)</span></label>
+          <input type="text" id="username" name="username" placeholder="jade_kram"
+                 value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required
+                 pattern="[a-zA-Z0-9_]{3,20}" autocomplete="username">
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -127,7 +128,7 @@ $flash = getFlash();
           </div>
           <div class="form-group">
             <label for="confirm">Confirm password</label>
-            <input type="password" id="confirm" name="confirm" placeholder="Re-enter" required>
+            <input type="password" id="confirm" name="confirm" placeholder="Confirm" required>
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block" style="margin-top:6px;">Create account</button>

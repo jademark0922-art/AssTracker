@@ -438,7 +438,6 @@ a:hover { opacity: .75; }
   background: rgba(255,255,255,.04);
   pointer-events: none;
 }
-/* hero-eyebrow */
 .hero-eyebrow {
   font-size: 10.5px;
   font-weight: 800;
@@ -683,6 +682,183 @@ a:hover { opacity: .75; }
   box-shadow: 0 8px 28px rgba(45,79,74,.38);
 }
 .toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Password toggle ──────────────────────────────────── */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 44px !important; }
+.pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .2s;
+  line-height: 1;
+}
+.pw-toggle:hover { color: var(--teal); }
+.pw-toggle svg { width: 18px; height: 18px; display: block; }
+
+/* ── Complete / Undo buttons ──────────────────────────── */
+.btn-complete {
+  background: rgba(58,173,122,.1);
+  border-color: rgba(58,173,122,.3);
+  color: #1a7a4f;
+}
+.btn-complete:hover {
+  background: rgba(58,173,122,.2);
+  border-color: rgba(58,173,122,.5);
+  color: #155f3e;
+}
+.btn-undo {
+  background: rgba(74,158,255,.1);
+  border-color: rgba(74,158,255,.3);
+  color: #1a5faa;
+}
+.btn-undo:hover {
+  background: rgba(74,158,255,.2);
+  border-color: rgba(74,158,255,.5);
+  color: #154888;
+}
+
+/* ── Tabs bar ─────────────────────────────────────────── */
+.tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+.tabs-left {
+  display: flex;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 5px;
+  box-shadow: var(--shadow-xs);
+}
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  background: transparent;
+  transition: all .2s ease;
+  white-space: nowrap;
+}
+.tab-btn:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+.tab-btn.tab-active {
+  background: var(--teal);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(45,79,74,.28);
+}
+.tab-badge {
+  background: rgba(255,255,255,.25);
+  color: inherit;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 50px;
+  min-width: 22px;
+  text-align: center;
+}
+.tab-btn:not(.tab-active) .tab-badge {
+  background: var(--teal-pale);
+  color: var(--teal-light);
+}
+
+/* ── Completed view ───────────────────────────────────── */
+.completed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.completed-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--green);
+  border-radius: var(--r);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform .18s, box-shadow .18s;
+  box-shadow: var(--shadow-xs);
+  opacity: .85;
+}
+.completed-row:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  opacity: 1;
+}
+.completed-check {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(58,173,122,.12);
+  border: 2px solid rgba(58,173,122,.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 800;
+}
+.completed-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text2);
+  text-decoration: line-through;
+  text-decoration-color: rgba(58,173,122,.5);
+}
+.completed-date {
+  font-size: 11px;
+  color: var(--muted2);
+  font-weight: 600;
+  min-width: 90px;
+}
+
+/* Empty completed state */
+.completed-empty {
+  text-align: center;
+  padding: 80px 20px;
+  background: var(--surface);
+  border: 2px dashed var(--border2);
+  border-radius: var(--r-xl);
+}
+.completed-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+.completed-empty-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.completed-empty-sub {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
 
 /* ── Utilities ────────────────────────────────────────── */
 .hidden { display: none !important; }

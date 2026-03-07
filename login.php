@@ -100,7 +100,7 @@ $flash = getFlash();
       <div class="auth-left-heading">Welcome</div>
       <div class="auth-left-sub">Your tasks are waiting. Log in with your username to pick up right where you left off.</div>
       <div class="auth-left-pills">
-        <div class="auth-left-pill"><span class="auth-left-pill-dot"></span> Board & List view</div>
+        <div class="auth-left-pill"><span class="auth-left-pill-dot"></span> Board &amp; List view</div>
         <div class="auth-left-pill"><span class="auth-left-pill-dot"></span> Deadline tracking</div>
         <div class="auth-left-pill"><span class="auth-left-pill-dot"></span> Firebase cloud sync</div>
       </div>
@@ -126,12 +126,38 @@ $flash = getFlash();
             Password
             <a href="forgot.php" class="label-link">Forgot password?</a>
           </label>
-          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+          <div class="pw-wrap">
+            <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="pw-toggle" onclick="togglePw('password', this)" aria-label="Show password">
+              <!-- Eye icon (shown when password is hidden) -->
+              <svg id="password-eye-show" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              <!-- Eye-off icon (shown when password is visible) -->
+              <svg id="password-eye-hide" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.07-3.346M6.228 6.228A9.97 9.97 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.423 5.337M3 3l18 18"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">Log in</button>
       </form>
-      <p class="auth-switch">Don't have an account? <a href="signup.php">Sign up free</a></p>
+      <p class="auth-switch">Don't have an account? <a href="signup.php">Sign up</a></p>
     </div>
   </div>
+
+  <script>
+    function togglePw(inputId, btn) {
+      const input   = document.getElementById(inputId);
+      const showIcon = document.getElementById(inputId + '-eye-show');
+      const hideIcon = document.getElementById(inputId + '-eye-hide');
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      showIcon.style.display = isHidden ? 'none'  : '';
+      hideIcon.style.display = isHidden ? ''      : 'none';
+      btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    }
+  </script>
 </body>
 </html>

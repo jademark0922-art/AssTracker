@@ -17,7 +17,8 @@ const STATUS_COLOR = {
 const STATUSES = ['To Do', 'In Progress', 'Done'];
 
 // ── State ─────────────────────────────────────────────────
-let viewMode = 'board';
+let viewMode        = 'board';
+let activeTab       = 'active';   // 'active' | 'completed'
 let pendingDeleteId = null;
 
 // ── DOM helpers ───────────────────────────────────────────
@@ -69,6 +70,13 @@ function isOverdue(d, status) {
   return new Date(d + 'T00:00:00') < now;
 }
 
+// ── Mark Complete ─────────────────────────────────────────
+async function markComplete(id) {
+  await post({ action: 'complete', id: id });
+  showToast('Task marked as complete! ✓');
+  refresh();
+}
+
 // ── Stats ─────────────────────────────────────────────────
 async function loadStats() {
   const s = await get({ action: 'stats' });
@@ -90,6 +98,10 @@ async function loadStats() {
       + '<div class="stat-bar"><div class="stat-fill" style="width:' + pct + '%;background:' + c.color + '"></div></div>'
       + '</div>';
   }).join('');
+
+  // Update completed tab badge
+  const badge = $('completedBadge');
+  if (badge) badge.textContent = s.done;
 }
 
 // ── Task list ─────────────────────────────────────────────
@@ -103,13 +115,37 @@ async function loadTasks() {
     sort:     $('fSort').value,
   };
   const tasks = await get(params);
-  $('taskCount').textContent = tasks.length + ' task' + (tasks.length !== 1 ? 's' : '');
-  viewMode === 'board' ? renderBoard(tasks) : renderList(tasks);
+
+  // Split into active vs completed
+  const activeTasks    = tasks.filter(t => t.status !== 'Done');
+  const completedTasks = tasks.filter(t => t.status === 'Done');
+
+  if (activeTab === 'completed') {
+    $('taskCount').textContent = completedTasks.length + ' completed task' + (completedTasks.length !== 1 ? 's' : '');
+    renderCompleted(completedTasks);
+    $('boardView').classList.add('hidden');
+    $('listView').classList.add('hidden');
+    $('completedView').classList.remove('hidden');
+  } else {
+    $('taskCount').textContent = activeTasks.length + ' task' + (activeTasks.length !== 1 ? 's' : '');
+    $('completedView').classList.add('hidden');
+    if (viewMode === 'board') {
+      $('boardView').classList.remove('hidden');
+      $('listView').classList.add('hidden');
+      renderBoard(activeTasks);
+    } else {
+      $('listView').classList.remove('hidden');
+      $('boardView').classList.add('hidden');
+      renderList(activeTasks);
+    }
+  }
 }
 
 // ── Board renderer ────────────────────────────────────────
 function renderBoard(tasks) {
-  $('boardView').innerHTML = STATUSES.map(function(status) {
+  // Only show To Do and In Progress on board when in active tab
+  const boardStatuses = ['To Do', 'In Progress'];
+  $('boardView').innerHTML = boardStatuses.map(function(status) {
     const cols = tasks.filter(function(t) { return t.status === status; });
     var cards = cols.length ? cols.map(cardHTML).join('') : '<div class="empty-col">No tasks</div>';
     return '<div class="board-col">'
@@ -130,6 +166,22 @@ function renderList(tasks) {
     : '<div class="empty-col" style="padding:60px">No tasks match your filters</div>';
 }
 
+// ── Completed renderer ────────────────────────────────────
+function renderCompleted(tasks) {
+  if (!tasks.length) {
+    $('completedView').innerHTML = '<div class="completed-empty">'
+      + '<div class="completed-empty-icon">🎉</div>'
+      + '<div class="completed-empty-title">No completed tasks yet</div>'
+      + '<div class="completed-empty-sub">Tasks you mark as complete will appear here.</div>'
+      + '</div>';
+    return;
+  }
+
+  $('completedView').innerHTML = '<div class="completed-list">'
+    + tasks.map(completedRowHTML).join('')
+    + '</div>';
+}
+
 // ── Card HTML ─────────────────────────────────────────────
 function cardHTML(t) {
   const od = isOverdue(t.deadline, t.status);
@@ -147,6 +199,7 @@ function cardHTML(t) {
     + (t.assigned_to ? '<span class="card-assigned">' + esc(t.assigned_to) + '</span>' : '')
     + '</div>'
     + '<div class="card-actions">'
+    + '<button type="button" class="btn-sm btn-complete" onclick="markComplete(\'' + t.id + '\')">✓ Done</button>'
     + '<button type="button" class="btn-sm btn-edit" onclick="editTask(\'' + t.id + '\')">Edit</button>'
     + '<button type="button" class="btn-sm btn-delete" onclick="openDeleteModal(\'' + t.id + '\')">Delete</button>'
     + '</div>'
@@ -170,10 +223,41 @@ function rowHTML(t) {
     + '<span class="row-status" style="color:' + sc + '">' + esc(t.status) + '</span>'
     + '<span class="row-deadline' + (od ? ' late' : '') + '">' + dl + '</span>'
     + (t.assigned_to ? '<span class="row-assigned">' + esc(t.assigned_to) + '</span>' : '')
+    + '<button type="button" class="btn-sm btn-complete" onclick="markComplete(\'' + t.id + '\')">✓ Done</button>'
     + '<button type="button" class="btn-sm btn-edit" onclick="editTask(\'' + t.id + '\')">Edit</button>'
     + '<button type="button" class="btn-sm btn-delete" onclick="openDeleteModal(\'' + t.id + '\')">Delete</button>'
     + '</div>'
     + '</div>';
+}
+
+// ── Completed row HTML ────────────────────────────────────
+function completedRowHTML(t) {
+  const pc = PRIORITY_COLOR[t.priority] || '#aaa';
+  const dl = t.deadline
+    ? new Date(t.deadline + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'No deadline';
+  return '<div class="completed-row">'
+    + '<div class="completed-check">✓</div>'
+    + '<span class="row-category">' + esc(t.category) + '</span>'
+    + '<div class="row-info">'
+    + '<div class="completed-title">' + esc(t.title) + '</div>'
+    + (t.description ? '<div class="row-desc">' + esc(t.description) + '</div>' : '')
+    + '</div>'
+    + '<div class="row-meta">'
+    + '<span class="priority-badge" style="background:' + pc + '22;color:' + pc + '">' + esc(t.priority) + '</span>'
+    + '<span class="completed-date">' + dl + '</span>'
+    + (t.assigned_to ? '<span class="row-assigned">' + esc(t.assigned_to) + '</span>' : '')
+    + '<button type="button" class="btn-sm btn-undo" onclick="undoComplete(\'' + t.id + '\')">↩ Undo</button>'
+    + '<button type="button" class="btn-sm btn-delete" onclick="openDeleteModal(\'' + t.id + '\')">Delete</button>'
+    + '</div>'
+    + '</div>';
+}
+
+// ── Undo complete ─────────────────────────────────────────
+async function undoComplete(id) {
+  await post({ action: 'undo_complete', id: id });
+  showToast('Task moved back to In Progress.');
+  refresh();
 }
 
 // ── Delete modal ──────────────────────────────────────────
@@ -264,6 +348,21 @@ function refresh() {
   loadTasks();
 }
 
+// ── Tab switching ─────────────────────────────────────────
+function switchTab(tab) {
+  activeTab = tab;
+  // Update tab styles
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.classList.toggle('tab-active', btn.dataset.tab === tab);
+  });
+  // Show/hide toggle view button (not relevant in completed tab)
+  const toggleBtn = $('toggleView');
+  if (toggleBtn) {
+    toggleBtn.style.display = tab === 'completed' ? 'none' : '';
+  }
+  loadTasks();
+}
+
 // ── Event listeners ───────────────────────────────────────
 $('toggleView').addEventListener('click', function () {
   viewMode = viewMode === 'board' ? 'list' : 'board';
@@ -295,6 +394,13 @@ var searchTimer;
 $('searchInput').addEventListener('input', function() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(loadTasks, 300);
+});
+
+// Tab buttons
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    switchTab(this.dataset.tab);
+  });
 });
 
 // ── Init ──────────────────────────────────────────────────

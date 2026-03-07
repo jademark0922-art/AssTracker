@@ -25,12 +25,40 @@ function getFlash(): ?array {
 // ═══════════════════════════════════════════════════════════
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+// ── Update display name ───────────────────────────────────
+if ($action === 'update_name') {
+    $newName = trim($_POST['name'] ?? '');
+    if (!$newName) { echo json_encode(['ok'=>false,'msg'=>'Name cannot be empty']); exit; }
+    if (strlen($newName) > 50) { echo json_encode(['ok'=>false,'msg'=>'Name too long (max 50 chars)']); exit; }
+
+    // Update Firebase Auth display name
+    $authRes = fb_http('POST', FB_AUTH_URL . ':update?key=' . FB_API_KEY, [
+        'idToken'      => $idToken,
+        'displayName'  => $newName,
+        'returnSecureToken' => true,
+    ]);
+
+    // Update Firestore user doc
+    fb_firestore_update("users/$uid", ['name' => $newName], $idToken);
+
+    if (isset($authRes['error'])) {
+        echo json_encode(['ok'=>false,'msg'=>'Failed to update name']);
+    } else {
+        $_SESSION['user_name'] = $newName;
+        // Refresh token if returned
+        if (!empty($authRes['idToken'])) {
+            $_SESSION['id_token'] = $authRes['idToken'];
+        }
+        echo json_encode(['ok'=>true,'name'=>$newName]);
+    }
+    exit;
+}
+
 // ── Debug: test Firebase connection & token ───────────────
 if ($action === 'debug') {
     $token   = $_SESSION['id_token']      ?? '';
     $refresh = $_SESSION['refresh_token'] ?? '';
 
-    // 1. Try token refresh
     $refreshRes = null;
     $freshToken = $token;
     if ($refresh) {
@@ -40,17 +68,14 @@ if ($action === 'debug') {
         if (!empty($refreshRes['id_token'])) $freshToken = $refreshRes['id_token'];
     }
 
-    // 2. Try Firestore write WITH auth token
     $writeWithAuth = fb_http('POST', FB_FIRESTORE . '/tasks', fb_fields([
         'userId' => $uid, 'title' => '__debug_auth__',
     ]), $freshToken);
 
-    // 3. Try Firestore write WITHOUT auth (using API key only) — tests open rules
     $writeNoAuth = fb_http('POST', FB_FIRESTORE . '/tasks?key=' . FB_API_KEY, fb_fields([
         'userId' => $uid, 'title' => '__debug_noauth__',
     ]));
 
-    // 4. Try reading (GET) to see if read works
     $readTest = fb_http('GET', FB_FIRESTORE . '/tasks?key=' . FB_API_KEY . '&pageSize=1');
 
     $out = [
@@ -65,7 +90,6 @@ if ($action === 'debug') {
         'read_test_result'       => $readTest,
     ];
 
-    // Cleanup any test docs created
     foreach ([$writeWithAuth, $writeNoAuth] as $r) {
         if (!empty($r['name'])) {
             $p = explode('/', $r['name']); $id = end($p);
@@ -102,12 +126,35 @@ if ($action === 'save') {
     } else {
         $newId = fb_firestore_add('tasks', $data, $idToken);
         if (!$newId) {
-            // Get raw error for debugging
             $rawRes = fb_call('POST', FB_FIRESTORE . '/tasks', fb_fields($data));
             echo json_encode(['ok'=>false,'msg'=>'Failed to save task.','firebase_error'=>$rawRes]);
         } else {
             echo json_encode(['ok'=>true,'id'=>$newId]);
         }
+    }
+    exit;
+}
+
+// ── Mark task as complete ─────────────────────────────────
+if ($action === 'complete') {
+    $id = $_POST['id'] ?? '';
+    if ($id) {
+        $result = fb_firestore_update("tasks/$id", ['status' => 'Done'], $idToken);
+        echo json_encode(isset($result['error']) ? ['ok'=>false] : ['ok'=>true]);
+    } else {
+        echo json_encode(['ok'=>false]);
+    }
+    exit;
+}
+
+// ── Undo complete (move back to In Progress) ──────────────
+if ($action === 'undo_complete') {
+    $id = $_POST['id'] ?? '';
+    if ($id) {
+        $result = fb_firestore_update("tasks/$id", ['status' => 'In Progress'], $idToken);
+        echo json_encode(isset($result['error']) ? ['ok'=>false] : ['ok'=>true]);
+    } else {
+        echo json_encode(['ok'=>false]);
     }
     exit;
 }
@@ -224,7 +271,6 @@ if ($action === 'stats') {
       background: rgba(255,255,255,.04);
       pointer-events: none;
     }
-    .hero-banner-text {}
     .hero-eyebrow {
       font-size: 11px;
       font-weight: 800;
@@ -257,6 +303,108 @@ if ($action === 'stats') {
       border-radius: 50px;
       flex-shrink: 0;
     }
+
+    /* ── Editable name in header ── */
+    .header-user-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+    .header-user {
+      background: var(--teal);
+      color: rgba(255,255,255,.9);
+      padding: 7px 16px;
+      border-radius: 50px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: background .2s;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+    .header-user:hover {
+      background: var(--teal-light);
+    }
+    .header-user .edit-icon {
+      width: 13px; height: 13px;
+      opacity: .55;
+      flex-shrink: 0;
+    }
+
+    /* Name edit popover */
+    .name-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px 18px 14px;
+      box-shadow: var(--shadow-lg);
+      z-index: 200;
+      width: 270px;
+      display: none;
+      animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
+    }
+    .name-popover.open { display: block; }
+    @keyframes popIn {
+      from { transform: scale(.92) translateY(-6px); opacity: 0; }
+      to   { transform: scale(1)   translateY(0);    opacity: 1; }
+    }
+    .name-popover-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .name-popover-input {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 9px 12px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--surface2);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      margin-bottom: 10px;
+    }
+    .name-popover-input:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(245,166,35,.12);
+      background: var(--surface);
+    }
+    .name-popover-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .name-popover-actions .btn-sm {
+      padding: 5px 14px;
+      font-size: 12px;
+    }
+    .name-save-btn {
+      background: var(--teal);
+      color: #fff;
+      border-color: transparent;
+    }
+    .name-save-btn:hover {
+      background: var(--teal-light);
+      color: #fff;
+    }
+    .name-cancel-btn {
+      background: var(--surface2);
+      color: var(--text2);
+      border-color: var(--border);
+    }
   </style>
 </head>
 <body>
@@ -267,7 +415,33 @@ if ($action === 'stats') {
       <div class="logo-sub">Universal Assignment Tracker</div>
     </div>
     <div class="header-actions">
-      <span class="header-user">Hi, <?= $userName ?></span>
+
+      <!-- Editable name chip -->
+      <div class="header-user-wrap" id="nameWrap">
+        <div class="header-user" id="nameChip" onclick="toggleNamePopover()" title="Click to edit your name">
+          <span id="headerNameText">Hi, <?= $userName ?></span>
+          <svg class="edit-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.25 2.25 0 013.182 3.182L7.5 19.213l-4.5 1.125 1.125-4.5L16.862 3.487z"/>
+          </svg>
+        </div>
+        <div class="name-popover" id="namePopover">
+          <div class="name-popover-label">Edit your name</div>
+          <input
+            type="text"
+            class="name-popover-input"
+            id="nameInput"
+            maxlength="50"
+            placeholder="Your display name"
+            value="<?= $userName ?>"
+            onkeydown="handleNameKey(event)"
+          >
+          <div class="name-popover-actions">
+            <button type="button" class="btn-sm name-cancel-btn" onclick="closeNamePopover()">Cancel</button>
+            <button type="button" class="btn-sm name-save-btn" onclick="saveName()">Save</button>
+          </div>
+        </div>
+      </div>
+
       <button type="button" class="btn btn-ghost" id="toggleView">List View</button>
       <button type="button" class="btn btn-primary" id="btnNewTask">+ New Task</button>
       <form method="POST" action="auth.php" style="margin:0">
@@ -298,6 +472,19 @@ if ($action === 'stats') {
     <!-- Stats -->
     <div class="stats" id="statsGrid"></div>
 
+    <!-- Tabs -->
+    <div class="tabs-bar">
+      <div class="tabs-left">
+        <button class="tab-btn tab-active" data-tab="active">
+          Active Tasks
+        </button>
+        <button class="tab-btn" data-tab="completed">
+          Completed
+          <span class="tab-badge" id="completedBadge">0</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Filters -->
     <div class="filters">
       <input type="text" id="searchInput" placeholder="Search tasks...">
@@ -322,6 +509,7 @@ if ($action === 'stats') {
 
     <div id="boardView" class="board"></div>
     <div id="listView"  class="list-view hidden"></div>
+    <div id="completedView" class="hidden"></div>
   </main>
 
   <!-- Task Modal -->
@@ -392,6 +580,61 @@ if ($action === 'stats') {
     const nth = n => { const s=['th','st','nd','rd']; const v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); };
     document.getElementById('heroDayLabel').textContent =
       days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + nth(now.getDate());
+
+    // ── Name edit ─────────────────────────────────────────
+    function toggleNamePopover() {
+      const pop = document.getElementById('namePopover');
+      const input = document.getElementById('nameInput');
+      const isOpen = pop.classList.contains('open');
+      if (isOpen) {
+        closeNamePopover();
+      } else {
+        pop.classList.add('open');
+        // Small delay so the element is visible before focusing
+        setTimeout(() => { input.focus(); input.select(); }, 50);
+      }
+    }
+
+    function closeNamePopover() {
+      document.getElementById('namePopover').classList.remove('open');
+    }
+
+    function handleNameKey(e) {
+      if (e.key === 'Enter')  saveName();
+      if (e.key === 'Escape') closeNamePopover();
+    }
+
+    async function saveName() {
+      const input   = document.getElementById('nameInput');
+      const newName = input.value.trim();
+      if (!newName) { showToast('Name cannot be empty.'); return; }
+
+      const fd = new FormData();
+      fd.append('action', 'update_name');
+      fd.append('name',   newName);
+
+      try {
+        const res  = await fetch('', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('headerNameText').textContent = 'Hi, ' + data.name;
+          closeNamePopover();
+          showToast('Name updated! ✓');
+        } else {
+          showToast('Error: ' + (data.msg || 'Could not update name.'));
+        }
+      } catch (err) {
+        showToast('Network error. Please try again.');
+      }
+    }
+
+    // Close popover when clicking outside
+    document.addEventListener('click', function(e) {
+      const wrap = document.getElementById('nameWrap');
+      if (wrap && !wrap.contains(e.target)) {
+        closeNamePopover();
+      }
+    });
   </script>
 </body>
 </html>

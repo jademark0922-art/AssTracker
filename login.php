@@ -7,7 +7,7 @@ $flash = getFlash();
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>AssTracker — Log In</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -89,9 +89,41 @@ $flash = getFlash();
     .auth-panel-right .auth-brand { text-align: left; }
     .auth-panel-right .auth-brand .logo { font-size: 26px; }
     @media (max-width: 680px) {
-      .auth-split { flex-direction: column; }
-      .auth-panel-left { width: 100%; padding: 36px 28px; }
-      .auth-panel-right { padding: 36px 28px; }
+      body.auth-body {
+        align-items: flex-start;
+        padding: 0;
+        min-height: 100dvh;
+      }
+      .auth-split {
+        flex-direction: column;
+        border-radius: 0;
+        border: none;
+        min-height: 100dvh;
+        box-shadow: none;
+      }
+      .auth-panel-left {
+        width: 100%;
+        padding: 28px 22px 22px;
+      }
+      .auth-left-heading { font-size: 24px; margin-bottom: 8px; }
+      .auth-left-sub { margin-bottom: 16px; font-size: 13px; }
+      .auth-left-pills { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+      .auth-left-pill { font-size: 11px; }
+      .auth-panel-right {
+        flex: 1;
+        padding: 28px 22px 40px;
+        justify-content: flex-start;
+      }
+      .form-group { margin-bottom: 14px; }
+      input[type="text"],
+      input[type="password"] {
+        font-size: 16px !important;
+        padding: 12px 14px;
+      }
+      .btn-block {
+        padding: 14px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>

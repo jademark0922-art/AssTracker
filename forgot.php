@@ -14,7 +14,7 @@ $step  = $_GET['step'] ?? '1'; // step 1 = enter username + captcha, step 2 = en
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>AssTracker — Reset Password</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -50,6 +50,31 @@ $step  = $_GET['step'] ?? '1'; // step 1 = enter username + captcha, step 2 = en
       background: none;
       border: none;
       padding: 0;
+    }
+    @media (max-width: 480px) {
+      body.auth-body {
+        align-items: flex-start;
+        padding: 16px;
+        min-height: 100dvh;
+      }
+      .auth-card {
+        width: 100%;
+        padding: 28px 20px 40px;
+        border-radius: 16px;
+      }
+      input[type="text"],
+      input[type="password"] {
+        font-size: 16px !important;
+        padding: 12px 14px;
+      }
+      .btn-block {
+        padding: 14px;
+        font-size: 16px;
+      }
+      #captchaCanvas {
+        width: 150px !important;
+        height: 48px !important;
+      }
     }
   </style>
 </head>

@@ -65,6 +65,15 @@ $step  = $_GET['step'] ?? '1';
         border: none !important;
         padding: 32px 22px 48px !important;
       }
+      /* Fix logo overflow */
+      .logo {
+        font-size: 22px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        max-width: 100%;
+      }
       input[type="text"],
       input[type="password"] {
         font-size: 16px !important;

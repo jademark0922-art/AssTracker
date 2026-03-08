@@ -3,7 +3,7 @@
    Colors matched exactly to reference image
    ============================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@700;800;900&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -69,12 +69,12 @@ a:hover { opacity: .75; }
 
 /* ── Logo ─────────────────────────────────────────────── */
 .logo {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  font-style: normal;
+  font-weight: 900;
   font-size: 26px;
   color: var(--teal);
-  letter-spacing: -.02em;
+  letter-spacing: -.03em;
   display: inline-block;
 }
 .logo-sub {
@@ -863,20 +863,221 @@ a:hover { opacity: .75; }
 /* ── Utilities ────────────────────────────────────────── */
 .hidden { display: none !important; }
 
-/* ── Responsive ───────────────────────────────────────── */
-@media (max-width: 1100px) { .stats { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 860px) {
-  .board  { grid-template-columns: 1fr; }
-  .row-meta { display: none; }
-  .main   { padding: 16px; }
-  .header { padding: 12px 16px; }
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Large tablets (≤1100px) ──────────────────────────── */
+@media (max-width: 1100px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .main  { padding: 22px 24px; }
 }
-@media (max-width: 560px) {
-  .auth-card   { padding: 28px 20px; }
-  .landing-cta { flex-direction: column; align-items: center; }
-  .stats       { grid-template-columns: 1fr 1fr; }
-  .filters input { min-width: 100%; }
-  .form-row    { grid-template-columns: 1fr; }
-  .filters     { flex-direction: column; align-items: stretch; }
-  .header-actions .btn-ghost { display: none; }
+
+/* ── Tablets / small laptops (≤860px) ─────────────────── */
+@media (max-width: 860px) {
+  /* Layout */
+  .board   { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .layout  { grid-template-columns: 1fr; }
+  .main    { padding: 18px 18px; }
+
+  /* Header wraps brand + actions onto two lines */
+  .header {
+    padding: 12px 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .brand { flex: 1; }
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  /* List view row — hide secondary meta on tablets */
+  .row-meta    { display: none; }
+
+  /* Auth split panels → stack */
+  .auth-split {
+    flex-direction: column;
+    max-width: 100%;
+    border-radius: var(--r-lg);
+  }
+  .auth-panel-left  { width: 100%; padding: 28px 28px 22px; }
+  .auth-panel-right { padding: 28px 28px; }
+  .auth-left-pills  { display: none; }
+  .auth-left-stat   { display: none; }
+  .auth-left-sub    { display: none; }
+  .auth-left-heading { font-size: 20px; margin-bottom: 0; }
+}
+
+/* ── Mobile phones (≤600px) ───────────────────────────── */
+@media (max-width: 600px) {
+  /* ── Body / base ── */
+  body { padding: 0; }
+
+  /* ── Main content area ── */
+  .main { padding: 12px 12px 24px; }
+
+  /* ── Header ── */
+  .header {
+    padding: 10px 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .brand { flex: 1 1 100%; }                 /* logo takes full row */
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    align-items: stretch;
+  }
+  /* Name chip — full width across both columns */
+  .header-user-wrap {
+    grid-column: 1 / -1;
+  }
+  .header-user {
+    width: 100%;
+    justify-content: space-between;
+  }
+  /* All header buttons fill their grid cell */
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 10px;
+    font-size: 12.5px;
+  }
+  /* Hide List View toggle — board is single col anyway */
+  .header-actions #toggleView { display: none; }
+  /* New Task button spans both columns (solo button after hiding List View) */
+  .header-actions #btnNewTask { grid-column: 1 / -1; }
+  /* Logout form spans both columns */
+  .header-actions form {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .header-actions form .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  /* Name popover full-width on mobile */
+  .name-popover {
+    width: calc(100vw - 28px);
+    left: 0;
+    right: 0;
+  }
+
+  /* ── Hero banner ── */
+  .hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+    gap: 10px;
+  }
+  .hero-today { align-self: flex-start; }
+
+  /* ── Stats grid ── */
+  .stats     { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { padding: 14px 16px; }
+  .stat-value { font-size: 30px; }
+
+  /* ── Filters ── */
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+  .filters input,
+  .filters select { min-width: 100%; width: 100%; }
+  .task-count { margin-left: 0; text-align: center; }
+
+  /* ── Board columns ── */
+  .board { grid-template-columns: 1fr; gap: 12px; }
+  .board-col { min-height: unset; }
+
+  /* ── Task cards ── */
+  .task-card  { padding: 14px; }
+  .card-title { font-size: 13.5px; }
+  .card-actions { gap: 5px; flex-wrap: wrap; }
+
+  /* ── List view rows ── */
+  .task-row     { padding: 12px 14px; gap: 10px; flex-wrap: wrap; }
+  .row-title    { font-size: 13px; }
+  .row-category { font-size: 9px; }
+  .row-meta     { display: none; }    /* keep hidden on mobile */
+
+  /* ── Tabs ── */
+  .tabs-bar  { flex-direction: column; align-items: stretch; gap: 8px; }
+  .tabs-left { overflow-x: auto; -webkit-overflow-scrolling: touch; display: flex; }
+  .tab-btn   { padding: 8px 14px; font-size: 12px; white-space: nowrap; }
+
+  /* ── Task modal ── */
+  .modal          { padding: 20px 16px; border-radius: var(--r-lg); width: 96%; max-height: 92vh; }
+  .modal-title    { font-size: 19px; }
+  .modal-actions  { flex-direction: column-reverse; gap: 8px; }
+  .modal-actions .btn { width: 100%; justify-content: center; }
+  /* 4-col form row → 2 columns on mobile */
+  .form-row       { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── Auth pages ── */
+  .auth-body  { padding: 16px 12px; align-items: flex-start; padding-top: 20px; }
+  .auth-card  { padding: 22px 16px; border-radius: var(--r-lg); }
+  .auth-split { border-radius: var(--r-lg); margin: 0; }
+  .auth-panel-left  { padding: 20px 18px; }
+  .auth-panel-right { padding: 22px 18px; }
+  .auth-panel-left .logo { font-size: 22px; }
+  .auth-left-heading { font-size: 17px; }
+  .auth-switch    { font-size: 13px; }
+  .auth-card-sub  { font-size: 13px; }
+
+  /* ── Landing page ── */
+  .landing-wrap        { padding: 0 4px; }
+  .landing-brand .logo { font-size: 32px; }
+  .landing-brand       { margin-bottom: 24px; }
+  .landing-cta         { flex-direction: column; align-items: stretch; }
+  .landing-cta .btn    { width: 100%; justify-content: center; }
+
+  /* ── Buttons ── */
+  .btn-lg { padding: 13px 24px; font-size: 14px; }
+
+  /* ── Forms ── */
+  .form-group { margin-bottom: 13px; }
+
+  /* ── Page section headers ── */
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .page-title  { font-size: 20px; }
+
+  /* ── Toast ── */
+  .toast { bottom: 16px; right: 12px; left: 12px; text-align: center; border-radius: var(--r); }
+}
+
+/* ── Very small phones (≤400px) ───────────────────────── */
+@media (max-width: 400px) {
+  .main  { padding: 10px 10px 20px; }
+
+  /* Header actions collapse to single column */
+  .header-actions {
+    grid-template-columns: 1fr;
+  }
+  .header-actions .btn,
+  .header-actions #btnNewTask,
+  .header-user-wrap,
+  .header-actions form {
+    grid-column: 1 / -1;
+  }
+
+  /* Stats → single column */
+  .stats { grid-template-columns: 1fr; }
+  .stat-value { font-size: 36px; }
+
+  /* Modal form row → single column */
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+
+  /* Auth */
+  .auth-panel-right { padding: 18px 14px; }
+  .auth-card        { padding: 18px 12px; }
+  .logo             { font-size: 24px; }
 }

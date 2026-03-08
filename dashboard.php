@@ -237,7 +237,7 @@ if ($action === 'stats') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AssTracker — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     .hero-banner {
@@ -280,7 +280,7 @@ if ($action === 'stats') {
       margin-bottom: 8px;
     }
     .hero-title {
-      font-family: var(--font-display);
+      font-family: 'Montserrat', sans-serif;
       font-style: italic;
       font-size: clamp(22px, 3vw, 32px);
       font-weight: 700;
@@ -404,6 +404,81 @@ if ($action === 'stats') {
       background: var(--surface2);
       color: var(--text2);
       border-color: var(--border);
+    }
+
+    /* ── Responsive overrides (dashboard-specific) ── */
+
+    /* ≤860px: header wraps, brand shrinks */
+    @media (max-width: 860px) {
+      .header {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 16px;
+      }
+      .brand { flex: 1; }
+      .header-actions {
+        flex-wrap: wrap;
+        gap: 7px;
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    /* ≤600px: full mobile layout */
+    @media (max-width: 600px) {
+      .header {
+        padding: 10px 14px;
+        gap: 8px;
+      }
+      .brand { flex: 1 1 100%; }
+      .header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+        align-items: stretch;
+      }
+      .header-user-wrap { grid-column: 1 / -1; }
+      .header-user { width: 100%; justify-content: space-between; }
+      .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 9px 10px;
+        font-size: 12.5px;
+      }
+      /* Hide list view toggle — board is already 1 col */
+      .header-actions #toggleView { display: none; }
+      /* New Task spans both cols (only button shown) */
+      .header-actions #btnNewTask { grid-column: 1 / -1; }
+      /* Logout form spans full width */
+      .header-actions form { grid-column: 1 / -1; margin: 0; }
+      .header-actions form .btn { width: 100%; justify-content: center; }
+      /* Name popover full width */
+      .name-popover { width: calc(100vw - 28px); left: 0; right: 0; }
+      /* Hero banner stacks */
+      .hero-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px 18px;
+        gap: 10px;
+      }
+      .hero-today { align-self: flex-start; }
+      /* Filters stack */
+      .filters { flex-direction: column; gap: 8px; padding: 12px 14px; }
+      .filters input, .filters select { min-width: 100%; width: 100%; }
+      .task-count { margin-left: 0; text-align: center; }
+      /* Tabs */
+      .tabs-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+      .tabs-left { overflow-x: auto; -webkit-overflow-scrolling: touch; display: flex; }
+    }
+
+    /* ≤400px: single column everything */
+    @media (max-width: 400px) {
+      .header-actions { grid-template-columns: 1fr; }
+      .header-actions .btn,
+      .header-actions #btnNewTask,
+      .header-user-wrap,
+      .header-actions form { grid-column: 1 / -1; }
     }
   </style>
 </head>

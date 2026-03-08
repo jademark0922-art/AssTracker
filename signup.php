@@ -10,7 +10,7 @@ $flash = getFlash();
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AssTracker — Create Account</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     .auth-split {
@@ -43,7 +43,7 @@ $flash = getFlash();
     }
     .auth-panel-left .logo { font-size: 32px; color: #fff; margin-bottom: 24px; }
     .auth-left-heading {
-      font-family: var(--font-display);
+      font-family: 'Montserrat', sans-serif;
       font-style: italic;
       font-size: 28px;
       font-weight: 700;

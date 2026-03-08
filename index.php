@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AssTracker — Get Productive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     .landing-hero-card {
@@ -79,6 +79,12 @@
       font-size: 16px;
       font-weight: 900;
       color: #fff;
+    }
+    @media (max-width: 480px) {
+      .landing-hero-card { padding: 24px 22px; }
+      .progress-ring-wrap { display: none; }
+      .hero-card-title { font-size: 26px; }
+      .schedule-grid { grid-template-columns: 1fr !important; }
     }
     .schedule-grid {
       display: grid;

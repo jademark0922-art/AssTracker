@@ -19,10 +19,9 @@ $step  = $_GET['step'] ?? '1'; // step 1 = enter username + captcha, step 2 = en
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-    <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="favicon3.svg">
-  <link rel="icon" type="image/png" sizes="256x256" href="favicon3-256.png">
-  <link rel="shortcut icon" href="favicon3.ico">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="icon/favicon3.ico">
+  <link rel="icon" type="image/png" sizes="256x256" href="icon/favicon3-256.png">
   <style>
     .captcha-wrap {
       position: relative;

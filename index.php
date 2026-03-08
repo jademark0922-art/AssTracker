@@ -138,7 +138,7 @@
   <div class="landing-wrap">
 
     <div class="landing-brand">
-      <div class="logo">AssTracker</div>
+      <div class="logo">AssignTracker</div>
       <div class="logo-sub">Universal Assignment Tracker</div>
     </div>
 

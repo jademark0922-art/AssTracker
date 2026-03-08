@@ -81,7 +81,7 @@ $step  = $_GET['step'] ?? '1'; // step 1 = enter username + captcha, step 2 = en
 <body class="auth-body">
   <div class="auth-card">
     <div class="auth-brand">
-      <a href="index.php" class="logo">AssignmentTracker</a>
+      <a href="index.php" class="logo">AssTracker</a>
       <p class="auth-card-sub">Reset your password</p>
     </div>
 

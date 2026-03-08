@@ -488,7 +488,7 @@ if ($action === 'stats') {
 
   <header class="header">
     <div class="brand">
-      <div class="logo">AssTracker</div>
+      <div class="logo">AssignmentTracker</div>
       <div class="logo-sub">Universal Assignment Tracker</div>
     </div>
     <div class="header-actions">

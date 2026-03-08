@@ -98,7 +98,7 @@ $flash = getFlash();
 <body class="auth-body">
   <div class="auth-split">
     <div class="auth-panel-left">
-      <a href="index.php" class="logo">AssTracker</a>
+      <a href="index.php" class="logo">AssignmentTracker</a>
       <div class="auth-left-heading">Welcome</div>
       <div class="auth-left-sub">Your tasks are waiting. Log in with your username to pick up right where you left off.</div>
       <div class="auth-left-pills">

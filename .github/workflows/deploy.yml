@@ -2,7 +2,9 @@ name: Deploy to InfinityFree
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
+    
+    workflow_dispatch:
 
 jobs:
   deploy:

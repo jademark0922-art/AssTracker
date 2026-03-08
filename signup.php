@@ -126,7 +126,7 @@ $flash = getFlash();
   <div class="auth-split">
     <div class="auth-panel-left">
       <a href="index.php" class="logo">AssignmentTracker</a>
-      <div class="auth-left-heading">Join to be<span>Productive</span></div>
+      <div class="auth-left-heading">Join to be <span>Productive</span></div>
       <div class="auth-left-sub">Create your free account and start tracking assignments, deadlines, and priorities — all in one place.</div>
       <div class="auth-left-pills">
         <div class="auth-left-pill"><span class="auth-left-pill-dot"></span> Board &amp; List view</div>
